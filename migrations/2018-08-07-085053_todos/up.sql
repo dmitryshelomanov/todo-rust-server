@@ -1,0 +1,6 @@
+CREATE TABLE todos (
+  id INT AUTO_INCREMENT,
+  title VARCHAR(255),
+  checked BOOLEAN,
+  PRIMARY KEY (id)
+)
