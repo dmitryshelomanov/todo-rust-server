@@ -1,24 +1,24 @@
 table! {
     sessions (id) {
         id -> Integer,
-        token -> Nullable<Varchar>,
-        user_id -> Nullable<Integer>,
+        token -> Varchar,
+        user_id -> Integer,
     }
 }
 
 table! {
     todos (id) {
         id -> Integer,
-        title -> Nullable<Varchar>,
-        checked -> Nullable<Bool>,
+        title -> Varchar,
+        checked -> Bool,
     }
 }
 
 table! {
     users (id) {
         id -> Integer,
-        login -> Nullable<Varchar>,
-        password -> Nullable<Varchar>,
+        login -> Varchar,
+        password -> Varchar,
     }
 }
 
