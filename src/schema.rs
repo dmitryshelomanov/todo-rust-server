@@ -11,6 +11,7 @@ table! {
         id -> Integer,
         title -> Varchar,
         checked -> Bool,
+        user_id -> Integer,
     }
 }
 
@@ -23,6 +24,7 @@ table! {
 }
 
 joinable!(sessions -> users (user_id));
+joinable!(todos -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
     sessions,
