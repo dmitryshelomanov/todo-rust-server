@@ -8,7 +8,7 @@ pub struct Todo {
 }
 
 #[derive(Insertable, AsChangeset, Deserialize)]
-#[table_name="todos"]
+#[table_name = "todos"]
 pub struct FormTodo {
     pub title: Option<String>,
     pub checked: Option<bool>,
