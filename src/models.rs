@@ -7,16 +7,9 @@ pub struct Todo {
     pub checked: bool,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, AsChangeset, Deserialize)]
 #[table_name="todos"]
-pub struct NewTodo<'a> {
-    pub title: &'a str,
-    pub checked: &'a bool,
-}
-
-#[derive(AsChangeset, Deserialize)]
-#[table_name="todos"]
-pub struct UpdatedTodo {
+pub struct FormTodo {
     pub title: Option<String>,
     pub checked: Option<bool>,
 }
