@@ -4,23 +4,37 @@ mod todo;
 
 use actix_web::*;
 
-
-#[derive(Fail, Debug, Serialize)]
-#[fail(display="ApiResponse")]
-pub struct ApiResponse {
-   status: &'static str
+#[derive(Debug, Serialize)]
+pub struct ApiResponse<T> {
+	data: T,
 }
 
-impl error::ResponseError for ApiResponse {}
+pub type ApiJson<T> = Json<ApiResponse<T>>;
 
-impl ApiResponse {
-	fn new(status: &'static str) -> ApiResponse {
-		ApiResponse { status }
+impl<T> ApiResponse<T> {
+	pub fn new(data: T) -> ApiJson<T> {
+		Json(ApiResponse { data })
 	}
 }
 
+#[derive(Fail, Debug)]
+pub enum ApiError {
+   #[fail(display="An internal error occurred. Please try again later.")]
+   InternalError,
+}
+
+impl error::ResponseError for ApiError {
+    fn error_response(&self) -> HttpResponse {
+       match *self {
+			ApiError::InternalError => {
+				HttpResponse::new(http::StatusCode::INTERNAL_SERVER_ERROR)
+			},
+       }
+    }
+}
+
 fn index(_req: &HttpRequest) -> impl Responder {
-	"Index"
+	"index"
 }
 
 pub fn with(app: App<()>) -> App<()> {
@@ -28,4 +42,8 @@ pub fn with(app: App<()>) -> App<()> {
 		.resource("/add", |r| {
 			r.method(http::Method::POST).with(todo::add_todo)
 		})
+		.resource("/update/{id}", |r| {
+			r.method(http::Method::POST).with(todo::update_todo)
+		})
+		.resource("/get", |r| r.f(todo::get_todos))
 }
