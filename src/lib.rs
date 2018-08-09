@@ -14,6 +14,7 @@ pub mod models;
 mod routes;
 mod schema;
 
+
 pub fn create_server() {
     let server_creator = move || {
         let app = App::new();
