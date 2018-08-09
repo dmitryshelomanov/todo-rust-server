@@ -38,9 +38,9 @@ pub struct ReqPath {
 	id: i32
 }
 
-pub fn update_todo((rt, todo): (Path<ReqPath>, Json<UpdatedTodo>)) -> Result<ApiJson<&'static str>, ApiError> {
+pub fn update_todo((path, todo): (Path<ReqPath>, Json<UpdatedTodo>)) -> Result<ApiJson<&'static str>, ApiError> {
 	let conn = db::establish_connection();
-	let _ = diesel::update(dsl::todos.find(rt.id))
+	let _ = diesel::update(dsl::todos.find(path.id))
 		.set(&UpdatedTodo {
 			title: todo.title.clone(),
 			checked: todo.checked.clone(),
