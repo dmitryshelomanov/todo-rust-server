@@ -45,5 +45,8 @@ pub fn with(app: App<()>) -> App<()> {
 		.resource("/update/{id}", |r| {
 			r.method(http::Method::POST).with(todo::update_todo)
 		})
+		.resource("/delete/{id}", |r| {
+			r.method(http::Method::POST).with(todo::delete_todo)
+		})
 		.resource("/get", |r| r.f(todo::get_todos))
 }
