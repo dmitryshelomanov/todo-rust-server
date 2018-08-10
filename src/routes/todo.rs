@@ -2,7 +2,7 @@ use actix_web::{HttpRequest, Json, Path};
 use db;
 use diesel;
 use diesel::prelude::*;
-use models::{AsChangesetTodo, InsertableTodo, Todo, Session};
+use models::{AsChangesetTodo, InsertableTodo, Session, Todo};
 use responses::errors::ApiError;
 use responses::response::{ApiJson, ApiResponse};
 use schema::todos::dsl;
@@ -26,9 +26,7 @@ pub fn add_todo(todo: Json<RequestTodo>) -> Result<ApiJson<&'static str>, ApiErr
     Ok(ApiResponse::new("success"))
 }
 
-pub fn get_todos(
-    (req, session): (HttpRequest, Session)
-) -> Result<ApiJson<Vec<Todo>>, ApiError> {
+pub fn get_todos((req, session): (HttpRequest, Session)) -> Result<ApiJson<Vec<Todo>>, ApiError> {
     let conn = db::establish_connection();
     let todos = dsl::todos
         .filter(dsl::user_id.eq(session.user_id))
@@ -62,7 +60,7 @@ pub fn update_todo(
 }
 
 pub fn delete_todo(
-    (path, req, session): (Path<ReqPath>, HttpRequest, Session)
+    (path, req, session): (Path<ReqPath>, HttpRequest, Session),
 ) -> Result<ApiJson<&'static str>, ApiError> {
     let conn = db::establish_connection();
     let target = dsl::todos

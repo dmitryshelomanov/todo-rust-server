@@ -2,8 +2,8 @@ use actix_web::http::{header, HttpTryFrom};
 use actix_web::middleware::{Middleware, Started};
 use actix_web::{error, HttpRequest, Result};
 use db;
-use models::Session;
 use diesel::prelude::*;
+use models::Session;
 use responses::errors::ApiError;
 use schema::sessions::dsl;
 
