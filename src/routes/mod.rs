@@ -1,6 +1,8 @@
-use actix_web::{dev, http, App, FromRequest, HttpRequest, Responder, Result};
+use actix_web::{http, App, FromRequest, HttpRequest, Result};
 use models::Session;
+use middleware::HandleAuth;
 mod todo;
+mod auth;
 
 impl<S> FromRequest<S> for Session {
     type Config = ();
@@ -15,12 +17,10 @@ impl<S> FromRequest<S> for Session {
     }
 }
 
-fn index(_req: &HttpRequest) -> impl Responder {
-    "index"
-}
-
 pub fn with(app: App<()>) -> App<()> {
-    app.resource("/", |r| r.f(index))
+    app.scope("/api", |scope| {
+        scope
+        .middleware(HandleAuth)
         .resource("/add", |r| {
             r.method(http::Method::POST).with(todo::add_todo)
         })
@@ -33,4 +33,8 @@ pub fn with(app: App<()>) -> App<()> {
         .resource("/get", |r| {
             r.method(http::Method::GET).with(todo::get_todos)
         })
+    })
+    .resource("/register", |r| {
+        r.method(http::Method::POST).with(auth::register)
+    })
 }

@@ -20,7 +20,7 @@ use middleware::HandleAuth;
 
 pub fn create_server() {
     let server_creator = move || {
-        let app = App::new().middleware(HandleAuth);
+        let app = App::new();
 
         routes::with(app)
     };
