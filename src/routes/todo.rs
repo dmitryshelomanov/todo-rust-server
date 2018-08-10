@@ -23,11 +23,12 @@ pub fn add_todo(todo: Json<RequestTodo>) -> Result<ApiJson<&'static str>, ApiErr
         .execute(&conn)
         .map_err(|error| ApiError::DbError(error.to_string()))?;
 
-    Ok(ApiResponse::new("sucess"))
+    Ok(ApiResponse::new("success"))
 }
 
-pub fn get_todos(req: &HttpRequest) -> Result<ApiJson<Vec<Todo>>, ApiError> {
-    let session = req.extensions().get::<Session>().unwrap().clone();
+pub fn get_todos(
+    (req, session): (HttpRequest, Session)
+) -> Result<ApiJson<Vec<Todo>>, ApiError> {
     let conn = db::establish_connection();
     let todos = dsl::todos
         .filter(dsl::user_id.eq(session.user_id))
@@ -43,9 +44,8 @@ pub struct ReqPath {
 }
 
 pub fn update_todo(
-    (path, todo, req): (Path<ReqPath>, Json<AsChangesetTodo>, HttpRequest),
+    (path, todo, req, session): (Path<ReqPath>, Json<AsChangesetTodo>, HttpRequest, Session),
 ) -> Result<ApiJson<&'static str>, ApiError> {
-    let session = req.extensions().get::<Session>().unwrap().clone();
     let conn = db::establish_connection();
     let target = dsl::todos
         .filter(dsl::id.eq(path.id))
@@ -58,13 +58,12 @@ pub fn update_todo(
         .execute(&conn)
         .map_err(|error| ApiError::DbError(error.to_string()))?;
 
-    Ok(ApiResponse::new("sucess"))
+    Ok(ApiResponse::new("success"))
 }
 
 pub fn delete_todo(
-    (path, req): (Path<ReqPath>, HttpRequest)
+    (path, req, session): (Path<ReqPath>, HttpRequest, Session)
 ) -> Result<ApiJson<&'static str>, ApiError> {
-    let session = req.extensions().get::<Session>().unwrap().clone();   
     let conn = db::establish_connection();
     let target = dsl::todos
         .filter(dsl::id.eq(path.id))
@@ -73,5 +72,5 @@ pub fn delete_todo(
         .execute(&conn)
         .map_err(|error| ApiError::DbError(error.to_string()))?;
 
-    Ok(ApiResponse::new("sucess"))
+    Ok(ApiResponse::new("success"))
 }
