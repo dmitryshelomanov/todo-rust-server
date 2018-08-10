@@ -2,8 +2,9 @@ use actix_web::{HttpRequest, Json, Path};
 use db;
 use diesel;
 use diesel::prelude::*;
-use models::{FormTodo, Todo};
-use routes::{ApiError, ApiJson, ApiResponse};
+use models::{AsChangesetTodo, InsertableTodo, Todo, Session};
+use responses::errors::ApiError;
+use responses::response::{ApiJson, ApiResponse};
 use schema::todos::dsl;
 
 #[derive(Deserialize, Debug)]
@@ -14,21 +15,24 @@ pub struct RequestTodo {
 pub fn add_todo(todo: Json<RequestTodo>) -> Result<ApiJson<&'static str>, ApiError> {
     let conn = db::establish_connection();
     let _ = diesel::insert_into(dsl::todos)
-        .values(FormTodo {
-            title: Some(todo.title.clone()),
-            checked: Some(false),
+        .values(InsertableTodo {
+            title: todo.title.clone(),
+            checked: false,
+            user_id: 2,
         })
         .execute(&conn)
-        .map_err(|_| ApiError::InternalError)?;
+        .map_err(|error| ApiError::DbError(error.to_string()))?;
 
     Ok(ApiResponse::new("sucess"))
 }
 
-pub fn get_todos(_req: &HttpRequest) -> Result<ApiJson<Vec<Todo>>, ApiError> {
+pub fn get_todos(req: &HttpRequest) -> Result<ApiJson<Vec<Todo>>, ApiError> {
+    let session = req.extensions().get::<Session>().unwrap().clone();
     let conn = db::establish_connection();
     let todos = dsl::todos
+        .filter(dsl::user_id.eq(session.user_id))
         .load::<Todo>(&conn)
-        .map_err(|_| ApiError::InternalError)?;
+        .map_err(|error| ApiError::DbError(error.to_string()))?;
 
     Ok(ApiResponse::new(todos))
 }
@@ -39,25 +43,35 @@ pub struct ReqPath {
 }
 
 pub fn update_todo(
-    (path, todo): (Path<ReqPath>, Json<FormTodo>),
+    (path, todo, req): (Path<ReqPath>, Json<AsChangesetTodo>, HttpRequest),
 ) -> Result<ApiJson<&'static str>, ApiError> {
+    let session = req.extensions().get::<Session>().unwrap().clone();
     let conn = db::establish_connection();
-    let _ = diesel::update(dsl::todos.find(path.id))
-        .set(&FormTodo {
+    let target = dsl::todos
+        .filter(dsl::id.eq(path.id))
+        .filter(dsl::user_id.eq(session.user_id));
+    let _ = diesel::update(target)
+        .set(&AsChangesetTodo {
             title: todo.title.clone(),
             checked: todo.checked.clone(),
         })
         .execute(&conn)
-        .map_err(|_| ApiError::InternalError)?;
+        .map_err(|error| ApiError::DbError(error.to_string()))?;
 
     Ok(ApiResponse::new("sucess"))
 }
 
-pub fn delete_todo(path: Path<ReqPath>) -> Result<ApiJson<&'static str>, ApiError> {
+pub fn delete_todo(
+    (path, req): (Path<ReqPath>, HttpRequest)
+) -> Result<ApiJson<&'static str>, ApiError> {
+    let session = req.extensions().get::<Session>().unwrap().clone();   
     let conn = db::establish_connection();
-    let _ = diesel::delete(dsl::todos.find(path.id))
+    let target = dsl::todos
+        .filter(dsl::id.eq(path.id))
+        .filter(dsl::user_id.eq(session.user_id));
+    let _ = diesel::delete(target)
         .execute(&conn)
-        .map_err(|_| ApiError::InternalError)?;
+        .map_err(|error| ApiError::DbError(error.to_string()))?;
 
     Ok(ApiResponse::new("sucess"))
 }

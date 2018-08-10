@@ -10,14 +10,17 @@ extern crate serde;
 use actix_web::{server, App};
 
 pub mod db;
+mod middleware;
 pub mod models;
+mod responses;
 mod routes;
 mod schema;
 
+use middleware::HandleAuth;
 
 pub fn create_server() {
     let server_creator = move || {
-        let app = App::new();
+        let app = App::new().middleware(HandleAuth);
 
         routes::with(app)
     };
