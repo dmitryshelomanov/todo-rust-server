@@ -1,8 +1,8 @@
-use actix_web::{HttpRequest, Json};
+use actix_web::Json;
 use db;
 use diesel;
 use diesel::prelude::*;
-use models::{InsertableUser};
+use models::InsertableUser;
 use responses::errors::ApiError;
 use responses::response::{ApiJson, ApiResponse};
 use schema::users::dsl;

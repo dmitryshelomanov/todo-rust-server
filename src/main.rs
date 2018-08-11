@@ -7,5 +7,7 @@ use todo_rust_server::create_server;
 fn main() {
     dotenv().ok();
 
-    create_server()
+    let server = create_server();
+    println!("Starting server");
+    server.run();
 }

@@ -7,7 +7,10 @@ extern crate failure;
 extern crate serde_derive;
 extern crate serde;
 
-use actix_web::{server, App};
+use actix_web::{
+    server::{self, HttpServer, IntoHttpHandler},
+    App,
+};
 
 pub mod db;
 mod middleware;
@@ -16,17 +19,12 @@ mod responses;
 mod routes;
 mod schema;
 
-use middleware::HandleAuth;
-
-pub fn create_server() {
+pub fn create_server() -> HttpServer<impl IntoHttpHandler> {
     let server_creator = move || {
         let app = App::new();
 
         routes::with(app)
     };
 
-    server::new(server_creator)
-        .bind("127.0.0.1:8080")
-        .unwrap()
-        .run();
+    server::new(server_creator).bind("127.0.0.1:8080").unwrap()
 }

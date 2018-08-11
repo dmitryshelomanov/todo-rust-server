@@ -1,8 +1,8 @@
-use actix_web::{http, App, FromRequest, HttpRequest, Result};
-use models::Session;
+use actix_web::{http, App, FromRequest, HttpRequest};
 use middleware::HandleAuth;
-mod todo;
+use models::Session;
 mod auth;
+mod todo;
 
 impl<S> FromRequest<S> for Session {
     type Config = ();
@@ -18,23 +18,23 @@ impl<S> FromRequest<S> for Session {
 }
 
 pub fn with(app: App<()>) -> App<()> {
-    app.scope("/api", |scope| {
-        scope
-        .middleware(HandleAuth)
-        .resource("/add", |r| {
-            r.method(http::Method::POST).with(todo::add_todo)
+    app.scope("/api", |api| {
+        api.middleware(HandleAuth)
+            .resource("/add", |r| {
+                r.method(http::Method::POST).with(todo::add_todo)
+            })
+            .resource("/update/{id}", |r| {
+                r.method(http::Method::POST).with(todo::update_todo)
+            })
+            .resource("/delete/{id}", |r| {
+                r.method(http::Method::POST).with(todo::delete_todo)
+            })
+            .resource("/get", |r| {
+                r.method(http::Method::GET).with(todo::get_todos)
+            })
+    }).scope("/api", |api| {
+        api.resource("/register", |r| {
+            r.method(http::Method::POST).with(auth::register)
         })
-        .resource("/update/{id}", |r| {
-            r.method(http::Method::POST).with(todo::update_todo)
-        })
-        .resource("/delete/{id}", |r| {
-            r.method(http::Method::POST).with(todo::delete_todo)
-        })
-        .resource("/get", |r| {
-            r.method(http::Method::GET).with(todo::get_todos)
-        })
-    })
-    .resource("/register", |r| {
-        r.method(http::Method::POST).with(auth::register)
     })
 }
