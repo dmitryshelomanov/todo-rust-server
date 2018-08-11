@@ -1,5 +1,5 @@
 use actix_web::Json;
-use db;
+use app_state::Req;
 use diesel;
 use diesel::prelude::*;
 use models::InsertableUser;
@@ -8,19 +8,20 @@ use responses::response::{ApiJson, ApiResponse};
 use schema::users::dsl;
 
 #[derive(Deserialize)]
-pub struct RequestLogin {
+pub struct RequestAuth {
     login: String,
     password: String,
 }
 
-pub fn register(user: Json<RequestLogin>) -> Result<ApiJson<&'static str>, ApiError> {
-    let conn = db::establish_connection();
-    let _ = diesel::insert_into(dsl::users)
+pub fn register((req, user): (Req, Json<RequestAuth>)) -> Result<ApiJson<&'static str>, ApiError> {
+    let conn = req.state().db.lock().unwrap();
+
+    diesel::insert_into(dsl::users)
         .values(InsertableUser {
             login: user.login.clone(),
             password: user.password.clone(),
         })
-        .execute(&conn)
+        .execute(&*conn)
         .map_err(|error| ApiError::DbError(error.to_string()))?;
 
     Ok(ApiResponse::new("success"))

@@ -1,14 +1,16 @@
 use actix_web::{http, App, FromRequest, HttpRequest};
+
+use app_state::AppState;
 use middleware::HandleAuth;
 use models::Session;
 mod auth;
 mod todo;
 
-impl<S> FromRequest<S> for Session {
+impl FromRequest<AppState> for Session {
     type Config = ();
     type Result = Self;
 
-    fn from_request(req: &HttpRequest<S>, _: &Self::Config) -> Self::Result {
+    fn from_request(req: &HttpRequest<AppState>, _: &Self::Config) -> Self::Result {
         let session = req.extensions().get::<Session>().unwrap().clone();
 
         Session {
@@ -17,9 +19,14 @@ impl<S> FromRequest<S> for Session {
     }
 }
 
-pub fn with(app: App<()>) -> App<()> {
+pub fn with(app: App<AppState>) -> App<AppState> {
     app.scope("/api", |api| {
-        api.middleware(HandleAuth)
+        api
+        .resource("/register", |r| {
+            r
+            .method(http::Method::POST).with(auth::register)
+        })
+        // .middleware(HandleAuth)
             .resource("/add", |r| {
                 r.method(http::Method::POST).with(todo::add_todo)
             })
@@ -32,9 +39,5 @@ pub fn with(app: App<()>) -> App<()> {
             .resource("/get", |r| {
                 r.method(http::Method::GET).with(todo::get_todos)
             })
-    }).scope("/api", |api| {
-        api.resource("/register", |r| {
-            r.method(http::Method::POST).with(auth::register)
-        })
     })
 }

@@ -11,20 +11,25 @@ use actix_web::{
     server::{self, HttpServer, IntoHttpHandler},
     App,
 };
+use std::sync::{Arc, Mutex};
 
-pub mod db;
+mod app_state;
+mod db;
 mod middleware;
-pub mod models;
+mod models;
 mod responses;
 mod routes;
 mod schema;
 
 pub fn create_server() -> HttpServer<impl IntoHttpHandler> {
     let server_creator = move || {
-        let app = App::new();
+        let database = db::establish_connection();
+
+        let state = app_state::AppState::new(Arc::new(Mutex::new(database)));
+        let app = App::with_state(state);
 
         routes::with(app)
     };
 
-    server::new(server_creator).bind("127.0.0.1:8080").unwrap()
+    server::new(server_creator).bind("127.0.0.1:9000").unwrap()
 }
