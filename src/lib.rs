@@ -8,8 +8,7 @@ extern crate serde_derive;
 extern crate serde;
 
 use actix_web::{
-    server::{self, HttpServer, IntoHttpHandler},
-    App,
+    server::{self, HttpServer, IntoHttpHandler}, App,
 };
 use std::sync::{Arc, Mutex};
 
@@ -26,7 +25,7 @@ pub fn create_server() -> HttpServer<impl IntoHttpHandler> {
         let database = db::establish_connection();
 
         let state = app_state::AppState::new(Arc::new(Mutex::new(database)));
-        let app = App::with_state(state);
+        let app = App::with_state(state).middleware(middleware::HandleAuth);
 
         routes::with(app)
     };

@@ -25,7 +25,17 @@ pub struct InsertableTodo {
 
 #[derive(Serialize, Clone)]
 pub struct Session {
-    pub user_id: i32,
+    pub user_id: Option<i32>,
+}
+
+impl Session {
+    pub fn is_auth(&self) -> bool {
+        if let Some(_) = self.user_id {
+            true
+        } else {
+            false
+        }
+    }
 }
 
 #[derive(Insertable, Deserialize)]

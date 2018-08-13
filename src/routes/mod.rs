@@ -21,13 +21,9 @@ impl FromRequest<AppState> for Session {
 
 pub fn with(app: App<AppState>) -> App<AppState> {
     app.scope("/api", |api| {
-        api
-        .resource("/register", |r| {
-            r
-            .method(http::Method::POST).with(auth::register)
-        })
-        // .middleware(HandleAuth)
-            .resource("/add", |r| {
+        api.resource("/register", |r| {
+            r.method(http::Method::POST).with(auth::register)
+        }).resource("/add", |r| {
                 r.method(http::Method::POST).with(todo::add_todo)
             })
             .resource("/update/{id}", |r| {

@@ -16,7 +16,7 @@ impl<S> Middleware<S> for HandleAuth {
         let headers = req.headers();
 
         if !headers.contains_key(TOKEN_KEY_NAME) {
-            Err(error::Error::from(ApiError::Unauthorized))
+            req.extensions_mut().insert(Session { user_id: None });
         } else {
             let header_token = req.headers().get(TOKEN_KEY_NAME).unwrap();
             let token = header_token.to_str().unwrap();
@@ -27,9 +27,11 @@ impl<S> Middleware<S> for HandleAuth {
                 .first(&conn)
                 .map_err(|error| error::Error::from(ApiError::DbError(error.to_string())))?;
 
-            req.extensions_mut().insert(Session { user_id });
-
-            Ok(Started::Done)
+            req.extensions_mut().insert(Session {
+                user_id: Some(user_id),
+            });
         }
+
+        Ok(Started::Done)
     }
 }
